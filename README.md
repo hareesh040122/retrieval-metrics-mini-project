@@ -80,3 +80,7 @@ SELECT post_id FROM posts ORDER BY embedding <=> $1 LIMIT 10;
 ```
 
 Wire each into `async keywordSearch(query)` and `async semanticSearch(query)` returning ranked `post_id` lists, then run your exact same metric code. The metrics do not change, only where the ranked lists come from.
+
+## Interpretation
+
+Semantic search is the better system overall on both metrics: its MRR is 0.67 versus 0.30 for keyword search, and its Recall@10 is 1.00 versus 0.60, so it found the correct answer for all 10 queries while keyword search missed 4. Keyword search won only two queries, "redis or memcached for caching" (rank 1 vs 2) and "sql or nosql for a new product" (rank 1 vs 3), which are short and built from exact technology names that appear word for word in the posts. Semantic search won the other eight, including "my background jobs stop after every deploy" and "why did my query get slower after I added an index", where keyword search returned a miss because the queries describe symptoms in words the posts don't use. A team would still keep keyword search because the two systems win on different kinds of queries: keyword is stronger on exact terms and semantic is stronger on meaning and paraphrase. Combining them into a hybrid search should therefore beat either one alone.
