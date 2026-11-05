@@ -1,19 +1,19 @@
-# Measuring Retrieval: MRR and Recall@10
+# Retrieval Metrics Mini Project
 
-Starter repository for the Learning Unit **Measuring Retrieval: MRR and Recall@k**.
+Build a tiny evaluation tool that measures how good a search system is.
 
-You will implement `eval.js` so it scores two search systems, keyword search and semantic search, on the same test set, computes **MRR** and **Recall@10** for each, and prints a **markdown comparison table**. No database or API keys are needed: the two systems' ranked results are provided as data.
+In this mini project you will implement `eval.js` so it scores two search systems, keyword search and semantic search, on the same set of test queries, computes **MRR** and **Recall@10** for each, and prints a **markdown comparison table**. No database or API keys are needed: the two systems' ranked results are already captured for you as data, so you can focus on the metrics themselves.
 
-## Files provided
+## What is in this project
 
+- `eval.js` : the file you build. It has four TODOs; the file-loading is done for you.
 - `test-set.csv` : 10 `(query, correct_post_ids)` pairs. A row may list more than one correct answer, semicolon-separated (for example `1024;1025`).
 - `search-results.json` : for each query, the top-10 ranked `post_id` list each system returned, shaped as `{ "<query>": { "keyword": [...], "semantic": [...] } }`. Array position 0 is rank 1.
-- `posts-dataset.csv` : the 35 posts the ids refer to (for sanity-checking; not required by the core task).
-- `eval.js` : starter with four TODOs to fill in. File-loading is done for you.
+- `posts-dataset.csv` : the 35 posts the ids refer to (for sanity-checking; not required by the core build).
 
-## What `eval.js` must do
+## What to build
 
-1. **Load** `test-set.csv` and `search-results.json` (already done in the starter).
+1. **Load** `test-set.csv` and `search-results.json` (already wired up in the starter).
 2. **Reciprocal Rank:** for one query, return `1 / rank` of the first correct id in a ranked list, or `0` if no correct id is in the top 10 (rank is 1-based).
 3. **Evaluation loop:** for every query, compute the reciprocal rank for the keyword and semantic lists and count a hit whenever the correct answer is in the top 10. Then compute, for each system:
    - **MRR** = average reciprocal rank across all 10 queries.
@@ -29,7 +29,7 @@ MRR       = average of the reciprocal ranks over all queries
 Recall@10 = (queries whose correct answer is in the top 10) / (total queries)
 ```
 
-## Run
+## Run it
 
 ```bash
 node eval.js
@@ -55,17 +55,17 @@ A correct `eval.js` prints exactly this table. If your numbers differ, your metr
 | **Summary** | **MRR 0.30 · Recall@10 0.60** | **MRR 0.67 · Recall@10 1.00** |
 ```
 
-## Submit
+## Write up your findings
 
-1. Fork this repository (or push to your own copy).
-2. Implement `eval.js` and add a `README.md` section (or a `RESULT.md`) containing:
-   - the result table your program printed, and
-   - a one-paragraph interpretation (4 to 6 sentences): which system is better and on which metric; which queries keyword search won and what they have in common; which queries semantic search won and what they have in common; and one sentence on why a team would keep the weaker system around.
-3. Open a **Pull Request** and submit the PR link.
+Add a short interpretation (4 to 6 sentences) to this README or a `RESULT.md`:
+- Which system is better overall, and on which metric(s)?
+- Which queries did keyword search win, and what do those queries have in common?
+- Which queries did semantic search win, and what do those have in common?
+- One sentence on why a team would still keep the weaker system around (hint: the two systems win on different queries).
 
-## Stretch goal (optional, not graded)
+## Take it further (optional)
 
-If you have a working Postgres with the posts loaded and embeddings generated, replace `search-results.json` with real searches:
+If you have a working Postgres with the posts loaded and embeddings generated, swap `search-results.json` for real searches:
 
 ```sql
 -- Keyword search (PG full-text)
@@ -80,3 +80,7 @@ SELECT post_id FROM posts ORDER BY embedding <=> $1 LIMIT 10;
 ```
 
 Wire each into `async keywordSearch(query)` and `async semanticSearch(query)` returning ranked `post_id` lists, then run your exact same metric code. The metrics do not change, only where the ranked lists come from.
+
+## Interpretation
+
+Semantic search is the better system overall on both metrics: its MRR is 0.67 versus 0.30 for keyword search, and its Recall@10 is 1.00 versus 0.60, so it found the correct answer for all 10 queries while keyword search missed 4. Keyword search won only two queries, "redis or memcached for caching" (rank 1 vs 2) and "sql or nosql for a new product" (rank 1 vs 3), which are short and built from exact technology names that appear word for word in the posts. Semantic search won the other eight, including "my background jobs stop after every deploy" and "why did my query get slower after I added an index", where keyword search returned a miss because the queries describe symptoms in words the posts don't use. A team would still keep keyword search because the two systems win on different kinds of queries: keyword is stronger on exact terms and semantic is stronger on meaning and paraphrase. Combining them into a hybrid search should therefore beat either one alone.
